@@ -1,0 +1,7 @@
+Fe,Cr,Ni,Mo,Mn,Si,Cu,S,P,C,N,O,Nb,Ti,W,Co,V,Al,Zr,Ta,Ce,Re,B,MfgRoute,Process_Clustered,Coolingmedium_Clustered,T[oC],t[hr],Solution_Clustered,EtoJ,Rrp
+61.53,24.44,9.11,3.68,0.388,0.291,0.145,0.00097,0.02328,0.0155,0.0155,0.01649,0,0,0,0,0,0,0,0,0,0,0,1,Processed/Treated,Water-based Cooling,1100,0.25,Chloride/Saline Solution,0.031,0.031
+61.53,24.44,9.11,3.68,0.388,0.291,0.145,0.00097,0.02328,0.0155,0.0155,0.01649,0,0,0,0,0,0,0,0,0,0,0,1,Processed/Treated,Water-based Cooling,400,1,Chloride/Saline Solution,0.0154,0.0154
+61.53,24.44,9.11,3.68,0.388,0.291,0.145,0.00097,0.02328,0.0155,0.0155,0.01649,0,0,0,0,0,0,0,0,0,0,0,1,Processed/Treated,Water-based Cooling,450,1,Chloride/Saline Solution,0.0065,0.0065
+61.53,24.44,9.11,3.68,0.388,0.291,0.145,0.00097,0.02328,0.0155,0.0155,0.01649,0,0,0,0,0,0,0,0,0,0,0,1,Processed/Treated,Water-based Cooling,500,1,Chloride/Saline Solution,0.0201,0.0201
+61.53,24.44,9.11,3.68,0.388,0.291,0.145,0.00097,0.02328,0.0155,0.0155,0.01649,0,0,0,0,0,0,0,0,0,0,0,1,Processed/Treated,Water-based Cooling,550,1,Chloride/Saline Solution,0.0495,0.0495
+61.53,24.44,9.11,3.68,0.388,0.291,0.145,0.00097,0.02328,0.0155,0.0155,0.01649,0,0,0,0,0,0,0,0,0,0,0,1,As-received/Initial,Water-based Cooling,25,0.0166,Chloride/Saline Solution,0.0083,0.0083
