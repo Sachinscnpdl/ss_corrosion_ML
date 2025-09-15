@@ -176,7 +176,7 @@ if st.button("Predict"):
     indices = ['PREN', 'Ceq', 'Neq']
     values = [out_df['PREN'].iloc[0], out_df['Ceq'].iloc[0], out_df['Neq'].iloc[0]]
 
-    ```chartjs
+    # ```chartjs
     {
       "type": "bar",
       "data": {
