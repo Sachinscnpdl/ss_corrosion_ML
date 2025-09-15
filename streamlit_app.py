@@ -155,7 +155,7 @@ gen_df = pd.DataFrame([row])
 # Reset button
 if st.button("Reset to Defaults"):
     st.session_state.clear()
-    st.experimental_rerun()
+    st.rerun()  # Updated to st.rerun() for compatibility with newer Streamlit versions
 
 if st.button("Predict"):
     out_df = run_prediction_pipeline(gen_df)
