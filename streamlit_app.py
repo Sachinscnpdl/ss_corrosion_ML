@@ -4,9 +4,11 @@ import math
 import numpy as np
 import pandas as pd
 import streamlit as st
+from mini_pipeline import featurize_and_refine_training_inmemory, featurize_new_and_align_inmemory, predict_on_dataframe_in_memory
+import os
 
-# Set MINI_PIPELINE_AVAILABLE to False since mini_pipeline is not available
-MINI_PIPELINE_AVAILABLE = False
+# Set MINI_PIPELINE_AVAILABLE to True
+MINI_PIPELINE_AVAILABLE = True
 
 # -------------------------
 # Physics indices
@@ -29,32 +31,54 @@ def add_physics_based_indices(df):
     return df
 
 # -------------------------
-# Prediction wrapper
+# Prediction wrapper using mini_pipeline
 # -------------------------
 def run_prediction_pipeline(gen_df, training_csv="corrosion_data_clustered.csv", save_csv="predicted_samples_only.csv"):
-    gen_df = gen_df.copy().reset_index(drop=True)
-    elements_superset = ['Fe','Cr','Ni','Mo','Mn','Si','Cu',
-                         'S','P','C','N','Nb','Ti','W','V',
-                         'Al','B']
-    elements = [e for e in elements_superset if e in gen_df.columns]
-    out_df = gen_df.copy().reset_index(drop=True)
-    for c in elements:
-        out_df[f"{c}_wtpct"] = out_df[c].astype(float)
-    out_df = add_physics_based_indices(out_df)
-    rng = np.random.default_rng(0)
-    pren_norm = (out_df['PREN'] - out_df['PREN'].min()) / (np.nanmax(out_df['PREN']) - np.nanmin(out_df['PREN']) + 1e-12)
-    ceq_norm = (out_df['Ceq'] - out_df['Ceq'].min()) / (np.nanmax(out_df['Ceq']) - np.nanmin(out_df['Ceq']) + 1e-12)
-    neq_norm = (out_df['Neq'] - out_df['Neq'].min()) / (np.nanmax(out_df['Neq']) - np.nanmin(out_df['Neq']) + 1e-12)
-    EtoJ_synthetic = 0.015 + 0.02 * (0.5 * pren_norm + 0.3 * ceq_norm + 0.2 * (1 - neq_norm))
-    EtoJ_synthetic += rng.normal(scale=0.002, size=len(EtoJ_synthetic))
-    out_df['EtoJ_pred'] = EtoJ_synthetic.clip(0.0001, None)
-    out_df['EtoJ_plot'] = out_df['EtoJ_pred'].astype(float)
-    out_df['Rrp_pred'] = out_df['EtoJ_pred']
-    out_df['Rrp_plot'] = out_df['Rrp_pred'].astype(float)
-    return out_df
+    try:
+        # Check if training CSV exists
+        if not os.path.exists(training_csv):
+            st.error(f"Training data file {training_csv} not found.")
+            st.stop()
+
+        # Process training data
+        df_train_refined, encs, cols = featurize_and_refine_training_inmemory(training_csv)
+
+        # Save input DataFrame to a temporary CSV for featurization
+        temp_csv = "temp_new_data.csv"
+        gen_df.to_csv(temp_csv, index=False)
+
+        # Featurize and align new data
+        df_ni_refined, _ = featurize_new_and_align_inmemory(temp_csv, encs, cols)
+
+        # Predict
+        out_df, preds = predict_on_dataframe_in_memory(df_ni_refined, label_encoders_provided=encs)
+
+        # Clean up temporary CSV
+        if os.path.exists(temp_csv):
+            os.remove(temp_csv)
+
+        # Add physics-based indices to output (for consistency with UI)
+        out_df = add_physics_based_indices(out_df)
+
+        # Ensure expected columns are present
+        for col in ['EtoJ_pred', 'Rrp_pred']:
+            if col not in out_df.columns:
+                out_df[col] = 0.0  # Fallback if predictions are missing
+        out_df['EtoJ_plot'] = out_df['EtoJ_pred'].astype(float)
+        out_df['Rrp_plot'] = out_df['Rrp_pred'].astype(float)
+
+        return out_df
+    except Exception as e:
+        st.error(f"Prediction pipeline failed: {e}")
+        st.stop()
 
 # Streamlit App
 st.title("CorrosionInformatics")
+
+# Load training data once at startup
+training_csv = "corrosion_data_clustered.csv"
+if not os.path.exists(training_csv):
+    st.warning(f"Training data file {training_csv} not found. Predictions may fail.")
 
 st.header("Input Elemental Composition (wt%)")
 
@@ -98,26 +122,26 @@ col1, col2 = st.columns(2)
 with col1:
     try:
         Cr = st.slider("Cr", min_value=float(unified_ranges['Cr'][0]), max_value=float(unified_ranges['Cr'][1]), 
-                       value=float(fixed_values['Cr']), step=0.1, format="%.1f")
+                       value=float(fixed_values['Cr']), step=0.1, format="%.1f", key="Cr_slider")
         Mo = st.slider("Mo", min_value=float(unified_ranges['Mo'][0]), max_value=float(unified_ranges['Mo'][1]), 
-                       value=float(fixed_values['Mo']), step=0.1, format="%.1f")
+                       value=float(fixed_values['Mo']), step=0.1, format="%.1f", key="Mo_slider")
         Si = st.slider("Si", min_value=float(unified_ranges['Si'][0]), max_value=float(unified_ranges['Si'][1]), 
-                       value=float(fixed_values['Si']), step=0.1, format="%.1f")
+                       value=float(fixed_values['Si']), step=0.1, format="%.1f", key="Si_slider")
         Nb = st.slider("Nb", min_value=float(unified_ranges['Nb'][0]), max_value=float(unified_ranges['Nb'][1]), 
-                       value=float(fixed_values['Nb']), step=0.1, format="%.1f")
+                       value=float(fixed_values['Nb']), step=0.1, format="%.1f", key="Nb_slider")
     except Exception as e:
         st.error(f"Error in major elements sliders: {e}")
         st.stop()
 with col2:
     try:
         Ni = st.slider("Ni", min_value=float(unified_ranges['Ni'][0]), max_value=float(unified_ranges['Ni'][1]), 
-                       value=float(fixed_values['Ni']), step=0.1, format="%.1f")
+                       value=float(fixed_values['Ni']), step=0.1, format="%.1f", key="Ni_slider")
         Mn = st.slider("Mn", min_value=float(unified_ranges['Mn'][0]), max_value=float(unified_ranges['Mn'][1]), 
-                       value=float(fixed_values['Mn']), step=0.1, format="%.1f")
+                       value=float(fixed_values['Mn']), step=0.1, format="%.1f", key="Mn_slider")
         C = st.slider("C", min_value=float(unified_ranges['C'][0]), max_value=float(unified_ranges['C'][1]), 
-                      value=float(fixed_values['C']), step=0.001, format="%.3f")
+                      value=float(fixed_values['C']), step=0.001, format="%.3f", key="C_slider")
         Cu = st.slider("Cu", min_value=float(unified_ranges['Cu'][0]), max_value=float(unified_ranges['Cu'][1]), 
-                       value=float(fixed_values['Cu']), step=0.1, format="%.1f")
+                       value=float(fixed_values['Cu']), step=0.1, format="%.1f", key="Cu_slider")
     except Exception as e:
         st.error(f"Error in major elements sliders: {e}")
         st.stop()
@@ -127,22 +151,22 @@ st.subheader("Trace Elements")
 col3, col4 = st.columns(2)
 with col3:
     S = st.number_input("S", min_value=float(small_ranges['S'][0]), max_value=float(small_ranges['S'][1]), 
-                        value=float(fixed_values['S']), step=0.0001, format="%.4f")
+                        value=float(fixed_values['S']), step=0.0001, format="%.4f", key="S_input")
     P = st.number_input("P", min_value=float(small_ranges['P'][0]), max_value=float(small_ranges['P'][1]), 
-                        value=float(fixed_values['P']), step=0.001, format="%.3f")
+                        value=float(fixed_values['P']), step=0.001, format="%.3f", key="P_input")
     N = st.number_input("N", min_value=float(small_ranges['N'][0]), max_value=float(small_ranges['N'][1]), 
-                        value=float(fixed_values['N']), step=0.001, format="%.3f")
+                        value=float(fixed_values['N']), step=0.001, format="%.3f", key="N_input")
     Ti = st.number_input("Ti", min_value=float(small_ranges['Ti'][0]), max_value=float(small_ranges['Ti'][1]), 
-                         value=float(fixed_values['Ti']), step=0.001, format="%.3f")
+                         value=float(fixed_values['Ti']), step=0.001, format="%.3f", key="Ti_input")
 with col4:
     W = st.number_input("W", min_value=float(small_ranges['W'][0]), max_value=float(small_ranges['W'][1]), 
-                        value=float(fixed_values['W']), step=0.001, format="%.3f")
+                        value=float(fixed_values['W']), step=0.001, format="%.3f", key="W_input")
     V = st.number_input("V", min_value=float(small_ranges['V'][0]), max_value=float(small_ranges['V'][1]), 
-                        value=float(fixed_values['V']), step=0.001, format="%.3f")
+                        value=float(fixed_values['V']), step=0.001, format="%.3f", key="V_input")
     Al = st.number_input("Al", min_value=float(small_ranges['Al'][0]), max_value=float(small_ranges['Al'][1]), 
-                         value=float(fixed_values['Al']), step=0.001, format="%.3f")
+                         value=float(fixed_values['Al']), step=0.001, format="%.3f", key="Al_input")
     B = st.number_input("B", min_value=float(small_ranges['B'][0]), max_value=float(small_ranges['B'][1]), 
-                        value=float(fixed_values['B']), step=0.0001, format="%.4f")
+                        value=float(fixed_values['B']), step=0.0001, format="%.4f", key="B_input")
 
 # Collect inputs
 inputs = {
@@ -184,7 +208,6 @@ if st.button("Reset to Defaults"):
 if st.button("Predict"):
     try:
         out_df = run_prediction_pipeline(gen_df)
-        out_df = add_physics_based_indices(out_df)
         
         st.header("Results")
         st.subheader("Physics-Based Indices")
