@@ -13,3 +13,11 @@ torch>=2.4.0
 pymatgen>=2024.9.10
 matminer>=0.9.2
 joblib>=1.4.2
+streamlit==1.38.0
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.5.1
+torch==2.4.0
+pymatgen==2024.9.10
+matminer==0.9.2
+joblib==1.4.2
