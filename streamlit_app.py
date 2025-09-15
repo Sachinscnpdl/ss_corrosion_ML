@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 
 import math
@@ -75,8 +76,8 @@ def run_prediction_pipeline(gen_df, training_csv="corrosion_data_clustered.csv",
 # Streamlit App
 st.title("CorrosionInformatics")
 
-# Load training data once at startup
-training_csv = "corrosion_data_clustered.csv"
+# Check for training data at startup
+training_csv = "corrosion_data_clustered.csv"  # Update path if in a subdirectory, e.g., "data/corrosion_data_clustered.csv"
 if not os.path.exists(training_csv):
     st.warning(f"Training data file {training_csv} not found. Predictions may fail.")
 
