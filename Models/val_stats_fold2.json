@@ -1,0 +1,27 @@
+{
+  "Rrp_mean": 0.0453209671287931,
+  "Rrp_std": 0.02829100618028173,
+  "Rrp_min": 0.001142,
+  "Rrp_max": 0.09937,
+  "MfgRoute_counts": {
+    "1": 56,
+    "0": 2
+  },
+  "Process_Clustered_counts": {
+    "1": 52,
+    "0": 6
+  },
+  "Coolingmedium_Clustered_counts": {
+    "2": 41,
+    "0": 12,
+    "1": 5
+  },
+  "Solution_Clustered_counts": {
+    "2": 40,
+    "0": 15,
+    "3": 2,
+    "1": 1
+  },
+  "phase_class_counts": {},
+  "PREN_band_counts": {}
+}
