@@ -60,8 +60,8 @@ st.header("Input Elemental Composition (wt%)")
 
 # Define ranges and defaults
 unified_ranges = {
-    'Mo': (0, 4), 'Cr': (10.5, 30), 'Si': (0, 2), 'Nb': (0, 1),
-    'Ni': (0, 15), 'Mn': (0, 10), 'C': (0, 0.12), 'Cu': (0, 3)
+    'Mo': (0.0, 4.0), 'Cr': (10.5, 30.0), 'Si': (0.0, 2.0), 'Nb': (0.0, 1.0),
+    'Ni': (0.0, 15.0), 'Mn': (0.0, 10.0), 'C': (0.0, 0.12), 'Cu': (0.0, 3.0)
 }
 small_ranges = {
     'S': (0.0003, 0.004),
@@ -74,14 +74,14 @@ small_ranges = {
     'B': (0.0, 0.005)
 }
 fixed_values = {
-    'Mo': (0 + 4) / 2,
-    'Cr': (10.5 + 30) / 2,
-    'Si': (0 + 2) / 2,
-    'Nb': (0 + 1) / 2,
-    'Ni': (0 + 15) / 2,
-    'Mn': (0 + 10) / 2,
-    'C': (0 + 0.12) / 2,
-    'Cu': (0 + 3) / 2,
+    'Mo': (0.0 + 4.0) / 2,
+    'Cr': (10.5 + 30.0) / 2,
+    'Si': (0.0 + 2.0) / 2,
+    'Nb': (0.0 + 1.0) / 2,
+    'Ni': (0.0 + 15.0) / 2,
+    'Mn': (0.0 + 10.0) / 2,
+    'C': (0.0 + 0.12) / 2,
+    'Cu': (0.0 + 3.0) / 2,
     'S': (0.0003 + 0.004) / 2,
     'P': (0.002 + 0.03) / 2,
     'N': (0.002 + 0.03) / 2,
@@ -96,29 +96,53 @@ fixed_values = {
 st.subheader("Major Elements")
 col1, col2 = st.columns(2)
 with col1:
-    Cr = st.slider("Cr", min_value=unified_ranges['Cr'][0], max_value=unified_ranges['Cr'][1], value=fixed_values['Cr'], step=0.1)
-    Mo = st.slider("Mo", min_value=unified_ranges['Mo'][0], max_value=unified_ranges['Mo'][1], value=fixed_values['Mo'], step=0.1)
-    Si = st.slider("Si", min_value=unified_ranges['Si'][0], max_value=unified_ranges['Si'][1], value=fixed_values['Si'], step=0.1)
-    Nb = st.slider("Nb", min_value=unified_ranges['Nb'][0], max_value=unified_ranges['Nb'][1], value=fixed_values['Nb'], step=0.1)
+    try:
+        Cr = st.slider("Cr", min_value=float(unified_ranges['Cr'][0]), max_value=float(unified_ranges['Cr'][1]), 
+                       value=float(fixed_values['Cr']), step=0.1, format="%.1f")
+        Mo = st.slider("Mo", min_value=float(unified_ranges['Mo'][0]), max_value=float(unified_ranges['Mo'][1]), 
+                       value=float(fixed_values['Mo']), step=0.1, format="%.1f")
+        Si = st.slider("Si", min_value=float(unified_ranges['Si'][0]), max_value=float(unified_ranges['Si'][1]), 
+                       value=float(fixed_values['Si']), step=0.1, format="%.1f")
+        Nb = st.slider("Nb", min_value=float(unified_ranges['Nb'][0]), max_value=float(unified_ranges['Nb'][1]), 
+                       value=float(fixed_values['Nb']), step=0.1, format="%.1f")
+    except Exception as e:
+        st.error(f"Error in major elements sliders: {e}")
+        st.stop()
 with col2:
-    Ni = st.slider("Ni", min_value=unified_ranges['Ni'][0], max_value=unified_ranges['Ni'][1], value=fixed_values['Ni'], step=0.1)
-    Mn = st.slider("Mn", min_value=unified_ranges['Mn'][0], max_value=unified_ranges['Mn'][1], value=fixed_values['Mn'], step=0.1)
-    C = st.slider("C", min_value=unified_ranges['C'][0], max_value=unified_ranges['C'][1], value=fixed_values['C'], step=0.001)
-    Cu = st.slider("Cu", min_value=unified_ranges['Cu'][0], max_value=unified_ranges['Cu'][1], value=fixed_values['Cu'], step=0.1)
+    try:
+        Ni = st.slider("Ni", min_value=float(unified_ranges['Ni'][0]), max_value=float(unified_ranges['Ni'][1]), 
+                       value=float(fixed_values['Ni']), step=0.1, format="%.1f")
+        Mn = st.slider("Mn", min_value=float(unified_ranges['Mn'][0]), max_value=float(unified_ranges['Mn'][1]), 
+                       value=float(fixed_values['Mn']), step=0.1, format="%.1f")
+        C = st.slider("C", min_value=float(unified_ranges['C'][0]), max_value=float(unified_ranges['C'][1]), 
+                      value=float(fixed_values['C']), step=0.001, format="%.3f")
+        Cu = st.slider("Cu", min_value=float(unified_ranges['Cu'][0]), max_value=float(unified_ranges['Cu'][1]), 
+                       value=float(fixed_values['Cu']), step=0.1, format="%.1f")
+    except Exception as e:
+        st.error(f"Error in major elements sliders: {e}")
+        st.stop()
 
 # Inputs for small ranges (number inputs for precision)
 st.subheader("Trace Elements")
 col3, col4 = st.columns(2)
 with col3:
-    S = st.number_input("S", min_value=small_ranges['S'][0], max_value=small_ranges['S'][1], value=fixed_values['S'], step=0.0001)
-    P = st.number_input("P", min_value=small_ranges['P'][0], max_value=small_ranges['P'][1], value=fixed_values['P'], step=0.001)
-    N = st.number_input("N", min_value=small_ranges['N'][0], max_value=small_ranges['N'][1], value=fixed_values['N'], step=0.001)
-    Ti = st.number_input("Ti", min_value=small_ranges['Ti'][0], max_value=small_ranges['Ti'][1], value=fixed_values['Ti'], step=0.001)
+    S = st.number_input("S", min_value=float(small_ranges['S'][0]), max_value=float(small_ranges['S'][1]), 
+                        value=float(fixed_values['S']), step=0.0001, format="%.4f")
+    P = st.number_input("P", min_value=float(small_ranges['P'][0]), max_value=float(small_ranges['P'][1]), 
+                        value=float(fixed_values['P']), step=0.001, format="%.3f")
+    N = st.number_input("N", min_value=float(small_ranges['N'][0]), max_value=float(small_ranges['N'][1]), 
+                        value=float(fixed_values['N']), step=0.001, format="%.3f")
+    Ti = st.number_input("Ti", min_value=float(small_ranges['Ti'][0]), max_value=float(small_ranges['Ti'][1]), 
+                         value=float(fixed_values['Ti']), step=0.001, format="%.3f")
 with col4:
-    W = st.number_input("W", min_value=small_ranges['W'][0], max_value=small_ranges['W'][1], value=fixed_values['W'], step=0.001)
-    V = st.number_input("V", min_value=small_ranges['V'][0], max_value=small_ranges['V'][1], value=fixed_values['V'], step=0.001)
-    Al = st.number_input("Al", min_value=small_ranges['Al'][0], max_value=small_ranges['Al'][1], value=fixed_values['Al'], step=0.001)
-    B = st.number_input("B", min_value=small_ranges['B'][0], max_value=small_ranges['B'][1], value=fixed_values['B'], step=0.0001)
+    W = st.number_input("W", min_value=float(small_ranges['W'][0]), max_value=float(small_ranges['W'][1]), 
+                        value=float(fixed_values['W']), step=0.001, format="%.3f")
+    V = st.number_input("V", min_value=float(small_ranges['V'][0]), max_value=float(small_ranges['V'][1]), 
+                        value=float(fixed_values['V']), step=0.001, format="%.3f")
+    Al = st.number_input("Al", min_value=float(small_ranges['Al'][0]), max_value=float(small_ranges['Al'][1]), 
+                         value=float(fixed_values['Al']), step=0.001, format="%.3f")
+    B = st.number_input("B", min_value=float(small_ranges['B'][0]), max_value=float(small_ranges['B'][1]), 
+                        value=float(fixed_values['B']), step=0.0001, format="%.4f")
 
 # Collect inputs
 inputs = {
@@ -155,29 +179,32 @@ gen_df = pd.DataFrame([row])
 # Reset button
 if st.button("Reset to Defaults"):
     st.session_state.clear()
-    st.rerun()  # Updated to st.rerun() for compatibility with newer Streamlit versions
+    st.rerun()
 
 if st.button("Predict"):
-    out_df = run_prediction_pipeline(gen_df)
-    out_df = add_physics_based_indices(out_df)
-    
-    st.header("Results")
-    st.subheader("Physics-Based Indices")
-    st.write(f"PREN: {out_df['PREN'].iloc[0]:.2f}")
-    st.write(f"Ceq: {out_df['Ceq'].iloc[0]:.2f}")
-    st.write(f"Neq: {out_df['Neq'].iloc[0]:.2f}")
-    
-    st.subheader("Predictions")
-    st.write(f"EtoJ_pred: {out_df['EtoJ_pred'].iloc[0]:.4f}")
-    st.write(f"Rrp_pred: {out_df['Rrp_pred'].iloc[0]:.4f}")
-    
-    # Bar chart for indices
-    st.subheader("Physics-Based Indices Visualization")
-    indices = ['PREN', 'Ceq', 'Neq']
-    values = [out_df['PREN'].iloc[0], out_df['Ceq'].iloc[0], out_df['Neq'].iloc[0]]
-    chart_data = pd.DataFrame({'Indices': indices, 'Values': values})
-    st.bar_chart(chart_data.set_index('Indices'))
+    try:
+        out_df = run_prediction_pipeline(gen_df)
+        out_df = add_physics_based_indices(out_df)
+        
+        st.header("Results")
+        st.subheader("Physics-Based Indices")
+        st.write(f"PREN: {out_df['PREN'].iloc[0]:.2f}")
+        st.write(f"Ceq: {out_df['Ceq'].iloc[0]:.2f}")
+        st.write(f"Neq: {out_df['Neq'].iloc[0]:.2f}")
+        
+        st.subheader("Predictions")
+        st.write(f"EtoJ_pred: {out_df['EtoJ_pred'].iloc[0]:.4f}")
+        st.write(f"Rrp_pred: {out_df['Rrp_pred'].iloc[0]:.4f}")
+        
+        # Bar chart for indices
+        st.subheader("Physics-Based Indices Visualization")
+        indices = ['PREN', 'Ceq', 'Neq']
+        values = [out_df['PREN'].iloc[0], out_df['Ceq'].iloc[0], out_df['Neq'].iloc[0]]
+        chart_data = pd.DataFrame({'Indices': indices, 'Values': values})
+        st.bar_chart(chart_data.set_index('Indices'))
 
-    # Download results
-    csv = out_df.to_csv(index=False)
-    st.download_button("Download Results", csv, "predicted_composition.csv", "text/csv")
+        # Download results
+        csv = out_df.to_csv(index=False)
+        st.download_button("Download Results", csv, "predicted_composition.csv", "text/csv")
+    except Exception as e:
+        st.error(f"Prediction failed: {e}")
