@@ -175,42 +175,9 @@ if st.button("Predict"):
     st.subheader("Physics-Based Indices Visualization")
     indices = ['PREN', 'Ceq', 'Neq']
     values = [out_df['PREN'].iloc[0], out_df['Ceq'].iloc[0], out_df['Neq'].iloc[0]]
+    chart_data = pd.DataFrame({'Indices': indices, 'Values': values})
+    st.bar_chart(chart_data.set_index('Indices'))
 
-    # ```chartjs
-    {
-      "type": "bar",
-      "data": {
-        "labels": ["PREN", "Ceq", "Neq"],
-        "datasets": [{
-          "label": "Indices",
-          "data": [${out_df['PREN'].iloc[0]}, ${out_df['Ceq'].iloc[0]}, ${out_df['Neq'].iloc[0]}],
-          "backgroundColor": ["#4CAF50", "#2196F3", "#FFC107"],
-          "borderColor": ["#388E3C", "#1976D2", "#FFA000"],
-          "borderWidth": 1
-        }]
-      },
-      "options": {
-        "scales": {
-          "y": {
-            "beginAtZero": true,
-            "title": {
-              "display": true,
-              "text": "Value",
-              "font": {"size": 14, "weight": "bold"}
-            },
-            "ticks": {"color": "#333333", "font": {"size": 12}}
-          },
-          "x": {
-            "title": {
-              "display": true,
-              "text": "Index",
-              "font": {"size": 14, "weight": "bold"}
-            },
-            "ticks": {"color": "#333333", "font": {"size": 12}}
-          }
-        },
-        "plugins": {
-          "legend": {"display": false}
-        }
-      }
-    }
+    # Download results
+    csv = out_df.to_csv(index=False)
+    st.download_button("Download Results", csv, "predicted_composition.csv", "text/csv")
