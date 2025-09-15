@@ -29,7 +29,7 @@ def add_physics_based_indices(df):
     return df
 
 # -------------------------
-# Prediction wrapper (using fallback since MINI_PIPELINE_AVAILABLE=False)
+# Prediction wrapper
 # -------------------------
 def run_prediction_pipeline(gen_df, training_csv="corrosion_data_clustered.csv", save_csv="predicted_samples_only.csv"):
     gen_df = gen_df.copy().reset_index(drop=True)
@@ -37,15 +37,14 @@ def run_prediction_pipeline(gen_df, training_csv="corrosion_data_clustered.csv",
                          'S','P','C','N','Nb','Ti','W','V',
                          'Al','B']
     elements = [e for e in elements_superset if e in gen_df.columns]
-    # Fallback predictor
     out_df = gen_df.copy().reset_index(drop=True)
     for c in elements:
         out_df[f"{c}_wtpct"] = out_df[c].astype(float)
     out_df = add_physics_based_indices(out_df)
     rng = np.random.default_rng(0)
     pren_norm = (out_df['PREN'] - out_df['PREN'].min()) / (np.nanmax(out_df['PREN']) - np.nanmin(out_df['PREN']) + 1e-12)
-    ceq_norm  = (out_df['Ceq']  - out_df['Ceq'].min())  / (np.nanmax(out_df['Ceq'])  - np.nanmin(out_df['Ceq'])  + 1e-12)
-    neq_norm  = (out_df['Neq']  - out_df['Neq'].min())  / (np.nanmax(out_df['Neq'])  - np.nanmin(out_df['Neq'])  + 1e-12)
+    ceq_norm = (out_df['Ceq'] - out_df['Ceq'].min()) / (np.nanmax(out_df['Ceq']) - np.nanmin(out_df['Ceq']) + 1e-12)
+    neq_norm = (out_df['Neq'] - out_df['Neq'].min()) / (np.nanmax(out_df['Neq']) - np.nanmin(out_df['Neq']) + 1e-12)
     EtoJ_synthetic = 0.015 + 0.02 * (0.5 * pren_norm + 0.3 * ceq_norm + 0.2 * (1 - neq_norm))
     EtoJ_synthetic += rng.normal(scale=0.002, size=len(EtoJ_synthetic))
     out_df['EtoJ_pred'] = EtoJ_synthetic.clip(0.0001, None)
@@ -55,7 +54,7 @@ def run_prediction_pipeline(gen_df, training_csv="corrosion_data_clustered.csv",
     return out_df
 
 # Streamlit App
-st.title("Stainless Steel Composition Predictor")
+st.title("CorrosionInformatics")
 
 st.header("Input Elemental Composition (wt%)")
 
@@ -129,11 +128,11 @@ inputs = {
 
 # Calculate Fe
 others_sum = sum(inputs.values())
+if others_sum > 99.99:
+    st.error("Total composition (excluding Fe) must be less than 100%. Please adjust the inputs.")
+    st.stop()
 Fe = max(0.01, 100.0 - others_sum)
 st.write(f"Calculated Fe (wt%): {Fe:.2f}")
-
-if others_sum > 99.99:
-    st.warning("Total composition exceeds 100%. Fe has been clipped to 0.01%.")
 
 # Create row
 row = inputs.copy()
@@ -145,12 +144,22 @@ row['Process_Clustered'] = 'Processed/Treated'
 row['Coolingmedium_Clustered'] = 'Water-based Cooling'
 row['Solution_Clustered'] = 'Chloride/Saline Solution'
 
+# Display composition summary
+st.subheader("Input Composition Summary")
+comp_df = pd.DataFrame([row], columns=list(inputs.keys()) + ['Fe'])
+st.table(comp_df)
+
 # Create DataFrame
 gen_df = pd.DataFrame([row])
 
+# Reset button
+if st.button("Reset to Defaults"):
+    st.session_state.clear()
+    st.experimental_rerun()
+
 if st.button("Predict"):
     out_df = run_prediction_pipeline(gen_df)
-    out_df = add_physics_based_indices(out_df)  # Already called in fallback, but ensures indices are present
+    out_df = add_physics_based_indices(out_df)
     
     st.header("Results")
     st.subheader("Physics-Based Indices")
@@ -161,3 +170,47 @@ if st.button("Predict"):
     st.subheader("Predictions")
     st.write(f"EtoJ_pred: {out_df['EtoJ_pred'].iloc[0]:.4f}")
     st.write(f"Rrp_pred: {out_df['Rrp_pred'].iloc[0]:.4f}")
+    
+    # Bar chart for indices
+    st.subheader("Physics-Based Indices Visualization")
+    indices = ['PREN', 'Ceq', 'Neq']
+    values = [out_df['PREN'].iloc[0], out_df['Ceq'].iloc[0], out_df['Neq'].iloc[0]]
+
+    ```chartjs
+    {
+      "type": "bar",
+      "data": {
+        "labels": ["PREN", "Ceq", "Neq"],
+        "datasets": [{
+          "label": "Indices",
+          "data": [${out_df['PREN'].iloc[0]}, ${out_df['Ceq'].iloc[0]}, ${out_df['Neq'].iloc[0]}],
+          "backgroundColor": ["#4CAF50", "#2196F3", "#FFC107"],
+          "borderColor": ["#388E3C", "#1976D2", "#FFA000"],
+          "borderWidth": 1
+        }]
+      },
+      "options": {
+        "scales": {
+          "y": {
+            "beginAtZero": true,
+            "title": {
+              "display": true,
+              "text": "Value",
+              "font": {"size": 14, "weight": "bold"}
+            },
+            "ticks": {"color": "#333333", "font": {"size": 12}}
+          },
+          "x": {
+            "title": {
+              "display": true,
+              "text": "Index",
+              "font": {"size": 14, "weight": "bold"}
+            },
+            "ticks": {"color": "#333333", "font": {"size": 12}}
+          }
+        },
+        "plugins": {
+          "legend": {"display": false}
+        }
+      }
+    }
